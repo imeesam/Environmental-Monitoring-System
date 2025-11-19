@@ -4,7 +4,7 @@ This project implements a **low-power environmental monitoring system** that mea
 
 ---
 
-<img src="Implementation.PNG" alt="MQTT Setup" width="400" height="300">
+<img src="templates/Implementation.PNG" alt="MQTT Setup" width="400" height="300">
 
 ## 📌 **Project Overview**
 
