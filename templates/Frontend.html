@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IoT Control Panel</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 {
+            color: #ffffff;
+            margin-bottom: 20px;
+            font-size: 36px;
+            font-weight: bold;
+            text-align: center;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .chart-container {
+            width: 80%;
+            height: 200px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            position: relative;
+            z-index: 2;
+        }
+
+        .chart-container canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #de437d 0%, #5b44b9 100%);
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    <h1>IoT Control Panel</h1>
+
+    <!-- Temperature Chart -->
+    <div class="chart-container">
+        <canvas id="iot-chart"></canvas>
+    </div>
+
+    <!-- Humidity Chart (New) -->
+    <div class="chart-container">
+        <canvas id="humidity-chart"></canvas>
+    </div>
+
+    <script>
+        let iotChart; 
+        let humidityChart;
+
+        function getGraphData() {
+            fetch('/api/get-graph-data')
+                .then(response => response.json())
+                .then(data => {
+                    updateTemperatureGraph(data.labels, data.temperatures);
+                    updateHumidityGraph(data.labels, data.humidity);
+                })
+                .catch(error => console.error(error));
+        }
+
+        // ---------------- TEMPERATURE GRAPH ---------------- //
+        function updateTemperatureGraph(labels, temperatures) {
+            if (!iotChart) {
+                const ctx = document.getElementById('iot-chart').getContext('2d');
+                iotChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Temperature (°C)',
+                            data: temperatures,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 2,
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: { type: 'linear', position: 'bottom' },
+                            y: { suggestedMin: 0, suggestedMax: 50 }
+                        }
+                    }
+                });
+            } else {
+                iotChart.data.labels = labels;
+                iotChart.data.datasets[0].data = temperatures;
+                iotChart.update();
+            }
+        }
+
+        // ---------------- HUMIDITY GRAPH ---------------- //
+        function updateHumidityGraph(labels, humidity) {
+            if (!humidityChart) {
+                const ctx = document.getElementById('humidity-chart').getContext('2d');
+                humidityChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Humidity (%)',
+                            data: humidity,
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 2,
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: { type: 'linear', position: 'bottom' },
+                            y: { suggestedMin: 0, suggestedMax: 100 }
+                        }
+                    }
+                });
+            } else {
+                humidityChart.data.labels = labels;
+                humidityChart.data.datasets[0].data = humidity;
+                humidityChart.update();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            getGraphData();
+            setInterval(getGraphData, 1000);
+        });
+    </script>
+</body>
+</html>
